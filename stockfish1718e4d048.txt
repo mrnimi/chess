@@ -42,7 +42,7 @@
     // debug: uncomment to see in main thread (requires postMessage hook in caller)
     // try { self.postMessage({ type: "stockfish-fetch", url: typeof patched==="string" ? patched : (patched && patched.url) }); } catch(_){}
     return _fetch(patched, init);
-  };
+  }
 
   // patch Request constructor usage inside script if it happens to use new Request(...)
   const _Request = self.Request;
@@ -51,6 +51,7 @@
     return new _Request(patched, init);
   };
 })();
+
 // ==== End Nimi patch =====================================================
 
 /*!
