@@ -36,8 +36,8 @@
     }
   }
 
-  const _fetch = self.fetch.bind(self);
-  self.fetch = function(input, init) {
+  const _fetch = fetch.bind(self);
+  fetch = function(input, init) {
     const patched = fixUrl(input);
     // debug: uncomment to see in main thread (requires postMessage hook in caller)
     // try { self.postMessage({ type: "stockfish-fetch", url: typeof patched==="string" ? patched : (patched && patched.url) }); } catch(_){}
