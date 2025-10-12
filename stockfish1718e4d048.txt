@@ -49,8 +49,8 @@
   self.Request = function(input, init) {
     const patched = fixUrl(input);
     return new _Request(patched, init);
-  };
-})();
+  }
+})()
 
 // ==== End Nimi patch =====================================================
 
