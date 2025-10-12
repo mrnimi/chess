@@ -45,8 +45,8 @@
   }
 
   // patch Request constructor usage inside script if it happens to use new Request(...)
-  const _Request = self.Request;
-  self.Request = function(input, init) {
+  const _Request = Request;
+  Request = function(input, init) {
     const patched = fixUrl(input);
     return new _Request(patched, init);
   }
