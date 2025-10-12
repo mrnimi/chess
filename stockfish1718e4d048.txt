@@ -50,7 +50,7 @@
     const patched = fixUrl(input);
     return new _Request(patched, init);
   }
-})()
+})();
 
 // ==== End Nimi patch =====================================================
 
