@@ -1,3 +1,57 @@
+/* ==== Nimi patch: rewrite WASM fetches to GitHub CDN =====================
+   This runs inside the Web Worker. It intercepts fetch() and new Request()
+   used by the Stockfish 17.1 script to pull its wasm parts. Any relative or
+   malformed URL that points to a *.wasm file is rewritten to an absolute URL:
+     https://cdn.jsdelivr.net/gh/mrnimi/chess@master/<filename>
+   ======================================================================= */
+(function(){
+  const BASE = "https://cdn.jsdelivr.net/gh/mrnimi/chess@master/";
+  const ABS = /^https?:\/\//i;
+
+  function fixUrl(u) {
+    try {
+      if (!u) return u;
+      // get string form
+      let s = typeof u === "string" ? u : (u && u.url ? u.url : "");
+
+      if (!s) return u;
+
+      // only patch wasm
+      if (!/\.wasm(\?|$)/i.test(s)) return u;
+
+      // clean accidental "https://domainhttps://domain" duplications
+      s = s.replace(/(https?:\/\/[^h]+)(https?:\/\/)/i, "$2");
+
+      // if already absolute, keep it
+      if (ABS.test(s)) return typeof u === "string" ? s : new Request(s, (u && u instanceof Request) ? u : undefined);
+
+      // otherwise, take just the filename
+      const file = s.split('/').pop();
+      const finalUrl = BASE + file;
+
+      return typeof u === "string" ? finalUrl : new Request(finalUrl, (u && u instanceof Request) ? u : undefined);
+    } catch (_) {
+      return u;
+    }
+  }
+
+  const _fetch = fetch.bind(self);
+  fetch = function(input, init) {
+    const patched = fixUrl(input);
+    // debug: uncomment to see in main thread (requires postMessage hook in caller)
+    // try { self.postMessage({ type: "stockfish-fetch", url: typeof patched==="string" ? patched : (patched && patched.url) }); } catch(_){}
+    return _fetch(patched, init);
+  }
+
+  // patch Request constructor usage inside script if it happens to use new Request(...)
+  const _Request = Request;
+  Request = function(input, init) {
+    const patched = fixUrl(input);
+    return new _Request(patched, init);
+  }
+})();
+
+// ==== End Nimi patch =====================================================
 /*!
  * Stockfish.js 17.1 (c) 2025, Chess.com, LLC
  * https://github.com/nmrugg/stockfish.js
